@@ -16,7 +16,7 @@ namespace Bot_Book
 {
     public class BookSearch124_Bot
     {
-        private TelegramBotClient botClient = new TelegramBotClient("7725517565:AAHft2iFUTRjIFIjefaFXAfvlxWXmb6PFq4");
+        private TelegramBotClient botClient = new TelegramBotClient("7794838059:AAFKU-al3h1qxLEEek_yghvFnATCBTv_OxM");
         private CancellationToken cancellationToken = new CancellationToken();
         private ReceiverOptions receiverOptions = new ReceiverOptions { AllowedUpdates = { } };
         private Dictionary<long, string> userStates = new();
@@ -227,7 +227,7 @@ namespace Bot_Book
                 return;
             }
 
-            foreach (var item in data.items.Take(3))
+            foreach (var item in data.items.Take(5))
             {
                 string reply =
                     $"📖 <b>{item.volumeInfo.title}</b>\n" +
