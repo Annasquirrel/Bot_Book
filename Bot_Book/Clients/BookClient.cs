@@ -38,7 +38,7 @@ namespace Bot_Book.Clients
             var resp = await _client.GetAsync(url);
 
             return resp.IsSuccessStatusCode
-                ? "✅ Книгу успішно додано до бази."
+                ? "✅ Книгу успішно додано до бібліотеки."
                 : resp.StatusCode == System.Net.HttpStatusCode.Conflict
                     ? "📚 Така книга вже є в бібліотеці."
                     : $"❌ Помилка: {resp.ReasonPhrase}";
