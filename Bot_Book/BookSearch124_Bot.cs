@@ -42,10 +42,7 @@ namespace Bot_Book
             {
                 await HandlerMessageAsync(botClient, update.Message);
             }
-            else if (update.Type == UpdateType.CallbackQuery)
-            {
-                await HandleCallbackQueryAsync(botClient, update.CallbackQuery);
-            }
+
         }
 
         private async Task HandlerMessageAsync(ITelegramBotClient botClient, Message message)
@@ -79,20 +76,8 @@ namespace Bot_Book
                     case "add_pages":
                         SaveTemp(chatId, "pages", text);
                         var d = tempData[chatId];
-                        var existingBooks = await client.GetAllBooksAsync();
-                        bool bookExists = existingBooks.Any(b =>
-                            b.Title.Equals(d["title"], StringComparison.OrdinalIgnoreCase) &&
-                            b.Author.Equals(d["author"], StringComparison.OrdinalIgnoreCase));
+                        string addResult = await client.AddBookAsync(d["title"], d["author"], d["pages"]);
 
-                        string addResult;
-                        if (bookExists)
-                        {
-                            addResult = "📚 Така книга вже є в бібліотеці.";
-                        }
-                        else
-                        {
-                            addResult = await client.AddBookAsync(d["title"], d["author"], d["pages"]);
-                        }
                         Clear(chatId);
                         await botClient.SendMessage(chatId, addResult);
                         return;
@@ -111,34 +96,15 @@ namespace Bot_Book
                             b.Title.Equals(c["title"], StringComparison.OrdinalIgnoreCase));
 
                         string putResult;
-                        if (bookToComment == null)
-                        {
-                            putResult = "❌ Книгу з такою назвою не знайдено в бібліотеці";
-                        }
-                        else
-                        {
-                            putResult = await client.UpdateCommentAsync(c["title"], c["comment"]);
-                        }
+                        putResult = await client.UpdateCommentAsync(c["title"], c["comment"]);
+
                         Clear(chatId);
                         await botClient.SendMessage(chatId, putResult);
                         return;
 
                     case "delete_title":
                         {
-                            var allBooks = await client.GetAllBooksAsync();
-                            var bookToDelete = allBooks.FirstOrDefault(b =>
-                                b.Title.Equals(text, StringComparison.OrdinalIgnoreCase));
-
-                            string delResult;
-                            if (bookToDelete == null)
-                            {
-                                delResult = "❌ Книгу з такою назвою не знайдено в бібліотеці.";
-                            }
-                            else
-                            {
-                                delResult = await client.DeleteBookAsync(text);
-                            }
-
+                            string delResult = await client.DeleteBookAsync(text);
                             Clear(chatId);
                             await botClient.SendMessage(chatId, delResult);
                             return;
@@ -236,19 +202,6 @@ namespace Bot_Book
                     $"{(string.IsNullOrWhiteSpace(item.volumeInfo.description) ? "Опис відсутній." : item.volumeInfo.description)}";
                 await botClient.SendMessage(chatId, reply, parseMode: ParseMode.Html);
             }
-        }
-
-        private async Task HandleCallbackQueryAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery)
-        {
-            long chatId = callbackQuery.Message.Chat.Id;
-
-            if (callbackQuery.Data == "Знайти книгу")
-            {
-                userStates[chatId] = "waiting_for_title";
-                await botClient.SendMessage(chatId, "Введіть назву книги:");
-            }
-
-            await botClient.AnswerCallbackQuery(callbackQuery.Id);
         }
     }
 }

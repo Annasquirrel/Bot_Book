@@ -36,10 +36,14 @@ namespace Bot_Book.Clients
             var url = $"GetBookByTitleAuthorAndPageCount?title={Uri.EscapeDataString(title)}" +
                       $"&author={Uri.EscapeDataString(author)}&pageCount={Uri.EscapeDataString(pageCount)}";
             var resp = await _client.GetAsync(url);
+
             return resp.IsSuccessStatusCode
                 ? "✅ Книгу успішно додано до бази."
-                : $"❌ Помилка: {resp.ReasonPhrase}";
+                : resp.StatusCode == System.Net.HttpStatusCode.Conflict
+                    ? "📚 Така книга вже є в бібліотеці."
+                    : $"❌ Помилка: {resp.ReasonPhrase}";
         }
+
 
         //Додавання коментаря 
         public async Task<string> UpdateCommentAsync(string title, string comment)
@@ -57,12 +61,16 @@ namespace Bot_Book.Clients
         {
             var url = $"DeleteBook?title={Uri.EscapeDataString(title)}";
             var resp = await _client.DeleteAsync(url);
-            return resp.IsSuccessStatusCode
-                ? "🗑️ Книгу вилучено."
-                : $"❌ Помилка: {resp.ReasonPhrase}";
+
+            if (resp.IsSuccessStatusCode)
+            {
+                return "🗑️ Книгу вилучено.";
+            }
+
+            var content = await resp.Content.ReadAsStringAsync();
+            return $"❌ Помилка: {resp.ReasonPhrase}";
         }
 
-        //Отримання всієї бібліотеки користувача
         public class SimpleBook
         {
             public string Title { get; set; }
